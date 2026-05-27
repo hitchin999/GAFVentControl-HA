@@ -1,0 +1,7 @@
+{
+  "name": "GAF MasterFlow Vent Control",
+  "homeassistant": "2024.1.0",
+  "zip_release": true,
+  "filename": "gaf_masterflow.zip",
+  "render_readme": true
+}
