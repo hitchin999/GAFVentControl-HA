@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "GAF MasterFlow Vent Control",
+        "description": "Sign in with the same email and password you use in the Vent Control mobile app.",
+        "data": {
+          "username": "Email",
+          "password": "Password",
+          "user_role": "Account type"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password.",
+      "cannot_connect": "Cannot reach the GAF cloud service."
+    },
+    "abort": {
+      "already_configured": "This account is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "signal_strength": {
+        "name": "Signal strength"
+      },
+      "firmware_version": {
+        "name": "Firmware version"
+      },
+      "serial_number": {
+        "name": "Serial number"
+      },
+      "current_temperature": {
+        "name": "Temperature"
+      },
+      "current_humidity": {
+        "name": "Humidity"
+      }
+    },
+    "binary_sensor": {
+      "verified": {
+        "name": "Verified"
+      },
+      "ota_in_progress": {
+        "name": "OTA update in progress"
+      },
+      "automatic_mode": {
+        "name": "Automatic mode"
+      },
+      "timer_mode": {
+        "name": "Timer mode"
+      },
+      "fan_mode": {
+        "name": "Manual mode"
+      },
+      "humidity_monitor": {
+        "name": "Humidity monitor"
+      }
+    },
+    "switch": {
+      "automatic_mode": {
+        "name": "Automatic mode"
+      },
+      "timer_mode": {
+        "name": "Timer mode"
+      },
+      "fan_mode": {
+        "name": "Manual mode"
+      }
+    },
+    "button": {
+      "all_off": {
+        "name": "Turn all off"
+      },
+      "firmware_update": {
+        "name": "Check for firmware update"
+      },
+      "refresh": {
+        "name": "Refresh now"
+      }
+    },
+    "number": {
+      "target_temperature": {
+        "name": "Activation temperature"
+      },
+      "target_humidity": {
+        "name": "Activation humidity"
+      },
+      "timer_value": {
+        "name": "Timer duration"
+      }
+    },
+    "select": {
+      "mode": {
+        "name": "Mode",
+        "state": {
+          "off": "Off",
+          "automatic": "Automatic",
+          "timer": "Timer",
+          "manual": "Manual"
+        }
+      }
+    }
+  }
+}
