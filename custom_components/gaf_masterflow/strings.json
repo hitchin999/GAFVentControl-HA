@@ -38,6 +38,9 @@
       }
     },
     "binary_sensor": {
+      "running": {
+        "name": "Running"
+      },
       "verified": {
         "name": "Verified"
       },
