@@ -24,12 +24,65 @@ def _settings(rec: dict[str, Any]) -> dict[str, Any]:
     return rec.get("deviceSettings") or {}
 
 
+def _config(rec: dict[str, Any]) -> dict[str, Any]:
+    return rec.get("deviceConfig") or {}
+
+
+def _is_running(d: dict[str, Any]) -> bool | None:
+    """Compute whether the attic fan is currently blowing.
+
+    The cloud API doesn't expose this directly, so we infer it:
+
+    * Manual mode ON  -> always running
+    * Timer mode  ON  -> running (the device clears the flag when the timer
+                          expires, so timerMode=true implies it's still active)
+    * Automatic mode  -> running if current temp >= activation temp, OR
+                         (humidity monitor on AND current humidity >= activation humidity)
+    * Otherwise       -> off
+
+    Returns None when settings are missing.
+    """
+    s = _settings(d)
+    if not s:
+        return None
+    if s.get("fanMode"):
+        return True
+    if s.get("timerMode"):
+        return True
+    if s.get("automaticMode"):
+        cfg = _config(d)
+        cur_t = cfg.get("setTemperature")           # live temperature (°F)
+        cur_h = cfg.get("setHumidity")              # live humidity (%)
+        act_t = s.get("setTemperature")             # activation temperature
+        act_h = s.get("setHumidity")                # activation humidity
+        try:
+            if cur_t is not None and act_t is not None and float(cur_t) >= float(act_t):
+                return True
+        except (TypeError, ValueError):
+            pass
+        if s.get("humidityMonitor"):
+            try:
+                if cur_h is not None and act_h is not None and float(cur_h) >= float(act_h):
+                    return True
+            except (TypeError, ValueError):
+                pass
+        return False
+    return False
+
+
 @dataclass(kw_only=True, frozen=True)
 class GafBinaryDescription(BinarySensorEntityDescription):
     value_fn: Callable[[dict[str, Any]], bool | None]
 
 
 BINARY_SENSOR_TYPES: tuple[GafBinaryDescription, ...] = (
+    GafBinaryDescription(
+        key="running",
+        translation_key="running",
+        icon="mdi:fan",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=_is_running,
+    ),
     GafBinaryDescription(
         key="verified",
         translation_key="verified",
