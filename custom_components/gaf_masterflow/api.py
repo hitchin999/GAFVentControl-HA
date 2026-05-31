@@ -24,11 +24,11 @@ _TIMEOUT = ClientTimeout(total=20)
 
 
 class GafAuthError(Exception):
-    """Raised when login fails or the token cannot be refreshed."""
+    """Raised when credentials are rejected (HTTP 4xx, missing idToken)."""
 
 
 class GafApiError(Exception):
-    """Raised for non-auth API failures."""
+    """Raised for non-credential failures (network, server, transient)."""
 
 
 class GafApiClient:
@@ -60,12 +60,26 @@ class GafApiClient:
                 AWS_BASE_URL + "login", json=payload, timeout=_TIMEOUT,
             ) as resp:
                 data = await resp.json(content_type=None)
+                if resp.status >= 500:
+                    # Server-side glitch — transient, let HA retry.
+                    raise GafApiError(
+                        f"login server error: HTTP {resp.status} "
+                        f"{(data or {}).get('statusInfo', '')}"
+                    )
                 if resp.status != 200:
+                    # 4xx = credentials rejected (or malformed request).
                     raise GafAuthError(
-                        f"login failed: {resp.status} {data.get('statusInfo', '')}"
+                        f"login failed: {resp.status} "
+                        f"{(data or {}).get('statusInfo', '')}"
                     )
         except (ClientError, TimeoutError) as err:
-            raise GafAuthError(f"network error during login: {type(err).__name__}: {err}") from err
+            # DNS, timeout, connection refused, etc. — NOT a credentials issue.
+            # Raise GafApiError so __init__.py maps it to ConfigEntryNotReady,
+            # which lets HA auto-retry with exponential backoff instead of
+            # marking the entry as needing re-auth.
+            raise GafApiError(
+                f"network error during login: {type(err).__name__}: {err}"
+            ) from err
 
         token = ((data or {}).get("responseData") or {}).get("idToken")
         if not token:
